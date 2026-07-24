@@ -1,6 +1,8 @@
 import { useState } from 'react'
-import LinkForm from './components/LinkForm.jsx'
-import CardList from './components/CardList.jsx'
+import { Route, Routes } from 'react-router-dom'
+import AppHeader from './components/AppHeader.jsx'
+import HomePage from './pages/HomePage.jsx'
+import SavedLinksPage from './pages/SavedLinksPage.jsx'
 import { getDomain } from './utils/url.js'
 import './App.css'
 
@@ -21,14 +23,20 @@ function App() {
   }
 
   return (
-    <main id="center">
-      <h1>ContextClip</h1>
-      <p className="intro">Turn research links into visual cards.</p>
-
-      <LinkForm existingUrls={cards.map((card) => card.url)} onAddCard={addCard} />
-
-      <CardList cards={cards} onDeleteCard={deleteCard} />
-    </main>
+    <>
+      <AppHeader />
+      <main id="center">
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <HomePage cards={cards} onAddCard={addCard} onDeleteCard={deleteCard} />
+            }
+          />
+          <Route path="/saved" element={<SavedLinksPage />} />
+        </Routes>
+      </main>
+    </>
   )
 }
 

@@ -1,3 +1,50 @@
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.app-brand {
+  color: var(--text-h);
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.nav-list {
+  display: flex;
+  gap: 8px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.nav-list a {
+  display: inline-block;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border-bottom: 2px solid transparent;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.nav-list a:hover {
+  color: var(--text-h);
+}
+
+.nav-list a.active {
+  border-bottom-color: currentColor;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.nav-list a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 #center {
   display: flex;
   flex-direction: column;
@@ -9,6 +56,15 @@
   box-sizing: border-box;
 }
 
+@media (max-width: 480px) {
+  .app-header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px 16px;
+  }
+}
+
 @media (max-width: 1024px) {
   #center {
     padding: 24px 16px;
@@ -18,6 +74,14 @@
 
 .intro {
   margin-top: -12px;
+}
+
+.saved-links-placeholder {
+  color: var(--text);
+  text-align: center;
+  padding: 24px;
+  border: 1px dashed var(--border);
+  border-radius: 8px;
 }
 
 .link-form {
