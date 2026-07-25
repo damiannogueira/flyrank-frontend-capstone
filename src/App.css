@@ -96,6 +96,11 @@
   color: var(--text-h);
 }
 
+.metadata-notice {
+  color: var(--text);
+  font-size: 14px;
+}
+
 .link-form-row {
   display: flex;
   gap: 8px;
@@ -122,6 +127,11 @@
   outline-offset: 2px;
 }
 
+.link-form-row input:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
 .link-form-row button {
   font: inherit;
   padding: 10px 16px;
@@ -142,9 +152,28 @@
   outline-offset: 2px;
 }
 
+.link-form-row button:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
 .form-error {
   color: #c0392b;
   margin: 0;
+}
+
+.form-feedback {
+  padding: 10px 12px;
+  border-left: 4px solid var(--accent);
+  border-radius: 4px;
+  background: var(--accent-bg);
+  color: var(--text-h);
+}
+
+.form-feedback-partial,
+.form-feedback-fallback,
+.form-feedback-rate-limit {
+  border-left-style: dashed;
 }
 
 .empty-state {
@@ -167,30 +196,73 @@
 
 .card {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 14px 16px;
+  flex-direction: column;
+  overflow: hidden;
   border: 1px solid var(--border);
   border-radius: 8px;
   background: var(--code-bg);
+}
+
+.card-preview {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  background: var(--border);
+}
+
+.card-content {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px;
 }
 
 .card-info {
   min-width: 0;
 }
 
-.card-info a {
+.card-site {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+  color: var(--text);
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.card-favicon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+.card-title {
+  display: inline-block;
   font-weight: 500;
   color: var(--text-h);
-  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.card-title:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.card-description {
+  margin-top: 8px;
+  color: var(--text);
+  overflow-wrap: anywhere;
 }
 
 .card-url {
-  margin: 4px 0 0;
+  margin: 8px 0 0;
   font-size: 14px;
   color: var(--text);
-  word-break: break-all;
+  overflow-wrap: anywhere;
 }
 
 .card-delete {
@@ -215,7 +287,7 @@
 }
 
 @media (max-width: 1024px) {
-  .card {
+  .card-content {
     flex-direction: column;
     align-items: stretch;
   }

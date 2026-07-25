@@ -12,6 +12,10 @@ function CardList({ cards, onDeleteCard }) {
           key={card.id}
           url={card.url}
           domain={card.domain}
+          title={card.title}
+          description={card.description}
+          imageUrl={card.imageUrl}
+          faviconUrl={card.faviconUrl}
           onDelete={() => onDeleteCard(card.id)}
         />
       ))}
