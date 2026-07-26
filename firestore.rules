@@ -1,0 +1,67 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    function isOptionalText(value, maxLength) {
+      return value == null ||
+        (value is string && value.size() > 0 && value.size() <= maxLength);
+    }
+
+    function isOptionalWebUrl(value, maxLength) {
+      return value == null ||
+        (value is string &&
+          value.size() > 0 &&
+          value.size() <= maxLength &&
+          (value.matches('^https://.*') || value.matches('^http://.*')));
+    }
+
+    function isValidSavedLink(data) {
+      return data.keys().hasAll([
+          'url',
+          'domain',
+          'title',
+          'description',
+          'imageUrl',
+          'faviconUrl',
+          'createdAt'
+        ]) &&
+        data.keys().hasOnly([
+          'url',
+          'domain',
+          'title',
+          'description',
+          'imageUrl',
+          'faviconUrl',
+          'createdAt'
+        ]) &&
+        data.url is string &&
+        data.url.size() > 0 &&
+        data.url.size() <= 2048 &&
+        (data.url.matches('^https://.*') || data.url.matches('^http://.*')) &&
+        data.domain is string &&
+        data.domain.size() > 0 &&
+        data.domain.size() <= 253 &&
+        isOptionalText(data.title, 500) &&
+        isOptionalText(data.description, 2000) &&
+        isOptionalWebUrl(data.imageUrl, 2048) &&
+        isOptionalWebUrl(data.faviconUrl, 2048) &&
+        data.createdAt == request.time;
+    }
+
+    match /users/{userId}/savedLinks/{linkId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId) &&
+        isValidSavedLink(request.resource.data);
+      allow delete: if isOwner(userId);
+      allow update: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
