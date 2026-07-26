@@ -943,6 +943,86 @@ No screen-reader test is claimed.
 
 ---
 
+## Phase 3A - Firebase Client and Anonymous Authentication
+
+### Prompt Summary
+
+Implement only Week 3 Phase 3A:
+
+- install the Firebase client dependency;
+- add a lazily initialized Firebase client for App, Auth, and Firestore;
+- validate the required Vite environment variables;
+- add an anonymous-authentication service;
+- reuse existing Firebase initialization and concurrent authentication work;
+- expose stable configuration, initialization, and authentication errors;
+- add focused unit tests using injected Firebase dependencies;
+- provide a safe `.env.example`;
+- keep Firestore persistence and React integration out of scope;
+- do not commit or push.
+
+After implementation, run lint, tests, build, and diff verification.
+
+### AI Contribution
+
+The AI added:
+
+- `src/services/firebaseClient.js`, containing lazy Firebase initialization, required environment-variable validation, existing-app reuse, and cached initialization results;
+- `src/services/authService.js`, containing anonymous authentication, restored-user handling, concurrent-call reuse, observer cleanup, and stable authentication errors;
+- focused unit tests for both services;
+- `.env.example` with placeholder-only Firebase variables;
+- the Firebase client dependency.
+
+The implementation kept React integration and Firestore saved-link persistence outside Phase 3A.
+
+### Human Review
+
+Human review inspected the Firebase client and authentication services before committing them.
+
+The review confirmed:
+
+- missing or blank environment values fail with a stable configuration error;
+- Firebase initialization remains lazy;
+- an existing Firebase app is reused;
+- initialization results and failures are cached;
+- concurrent authentication callers reuse one operation;
+- restored anonymous users do not trigger another sign-in;
+- authentication observers are unsubscribed after success or failure;
+- malformed Firebase users map to a stable authentication error;
+- the real `.env.local` file is ignored by Git.
+
+The Firebase Console setup was completed manually:
+
+- a ContextClip Firebase project and web app were created;
+- anonymous authentication was enabled;
+- a default Firestore database was created in production mode;
+- real client values were stored only in the ignored `.env.local` file.
+
+### Manual Changes or Corrections
+
+No source-code correction was required after reviewing the Phase 3A implementation.
+
+Dependency security was reviewed manually:
+
+- a safe `npm audit fix` updated the development-only `brace-expansion` dependency from 5.0.7 to 5.0.8;
+- `npm audit fix --force` was not used because it proposed a React Router downgrade;
+- the remaining React Router advisory concerns React Server Components mode, which ContextClip does not use;
+- the blocked `@firebase/util` and `protobufjs` install scripts were inspected;
+- both scripts were left blocked because neither is required for the current ContextClip setup.
+
+### Verification
+
+- `npm run lint` passed.
+- `npm run test` passed 70/70 tests.
+- `npm run build` passed.
+- `git diff --check` passed.
+- `git diff --cached --check` passed before the feature commit.
+- `firebase@12.16.0` is the only new direct dependency.
+- `brace-expansion@5.0.8` is installed through the ESLint dependency tree.
+- `.env.local` was not staged or committed.
+- No Firebase browser lifecycle or persistence behavior is claimed yet; that integration remains deferred to the later Phase 3 steps.
+
+---
+
 ## Final AI Assistance Summary
 
 Pending until the later Week 3 phases are finished.
