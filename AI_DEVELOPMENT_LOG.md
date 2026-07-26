@@ -1023,6 +1023,112 @@ Dependency security was reviewed manually:
 
 ---
 
+## Phase 3B - Firestore Saved Links Service and Security Rules
+
+### Prompt Summary
+
+Implement only Week 3 Phase 3B:
+
+- create a UI-independent Firestore saved-links service;
+- store data under `users/{uid}/savedLinks/{linkId}`;
+- use Firestore-generated document IDs;
+- prevent duplicate saves through a UID-scoped normalized-URL query;
+- support saving, newest-first listing, and deletion;
+- persist only the fields required by the current cards;
+- validate user IDs, document IDs, links, optional text, and web asset URLs;
+- expose stable service errors;
+- return normalized plain JavaScript objects;
+- create focused unit tests using injected Firestore dependencies;
+- add production-safe Firestore Security Rules;
+- keep React integration, Firebase CLI configuration, and rules deployment outside this phase;
+- do not commit or push.
+
+After implementation, run lint, tests, build, and diff verification.
+
+### AI Contribution
+
+The AI added:
+
+- `src/services/savedLinksService.js`;
+- `src/services/savedLinksService.test.js`;
+- `firestore.rules`.
+
+The saved-links service supports:
+
+- duplicate checks scoped to the authenticated user’s collection;
+- Firestore-generated document references;
+- normalized saved-link serialization;
+- server-generated creation timestamps;
+- newest-first Firestore queries;
+- plain returned objects containing Firestore document IDs and ISO timestamp strings;
+- UID-scoped deletion;
+- stable validation, duplicate, and Firestore-request errors;
+- dependency injection for isolated unit tests.
+
+The Firestore rules:
+
+- require authentication;
+- require `request.auth.uid` to match the user ID in the path;
+- validate an exact allowlist of saved-link fields;
+- validate field types and maximum lengths;
+- permit only HTTP or HTTPS URLs for previews and favicons;
+- require the creation timestamp to match `request.time`;
+- allow ownership-scoped reads, creates, and deletes;
+- deny updates;
+- deny unrelated document access by default.
+
+### Human Review
+
+Human review inspected the complete saved-links service, its tests, and the Firestore rules before committing them.
+
+The review confirmed:
+
+- duplicate queries use only `users/{uid}/savedLinks`;
+- duplicate detection prevents document creation and writes;
+- new records use Firestore-generated IDs;
+- only `url`, `domain`, `title`, `description`, `imageUrl`, `faviconUrl`, and `createdAt` are persisted;
+- transient card properties are excluded;
+- optional blank fields normalize to `null`;
+- the normalized URL and locally derived domain remain authoritative;
+- listing uses `orderBy('createdAt', 'desc')`;
+- returned records are plain objects rather than mutable Firestore snapshots;
+- deletion validates both UID and document ID before constructing its path;
+- Firestore failures preserve their original causes;
+- separate service factories remain isolated;
+- the rules match the exact data written by the service.
+
+The rules were reviewed locally but were not published, deployed, or emulator-tested during this phase.
+
+### Manual Changes or Corrections
+
+Human review identified that `listSavedLinks()` called `documentSnapshot.data()` twice for every returned document.
+
+A narrowly scoped AI correction:
+
+- stores the result of `documentSnapshot.data()` in one local variable;
+- uses the same object for link normalization and timestamp conversion;
+- preserves the public API and returned object shape;
+- updates the existing listing test to verify that `data()` is called exactly once.
+
+No correction to `firestore.rules` was required.
+
+### Verification
+
+- `npm run lint` passed.
+- `npm run test` passed 87/87 tests.
+- Phase 3B added 17 service tests.
+- `npm run build` passed.
+- `git diff --check` passed.
+- `git diff --cached --check` passed after staging the three new files.
+- The working tree contained exactly the three approved Phase 3B files before the feature commit.
+- No React file was modified.
+- No package was installed or updated.
+- No real Firebase or network request was made by the tests.
+- No Firebase rules were deployed.
+- No emulator or Rules Playground result is claimed yet.
+- React integration and real persistence verification remain deferred to Phase 3C.
+
+---
 ## Final AI Assistance Summary
 
 Pending until the later Week 3 phases are finished.
