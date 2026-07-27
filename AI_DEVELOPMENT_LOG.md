@@ -1129,6 +1129,169 @@ No correction to `firestore.rules` was required.
 - React integration and real persistence verification remain deferred to Phase 3C.
 
 ---
+## Phase 3C - React Firebase Persistence Integration
+
+### Prompt Summary
+
+Implement only Week 3 Phase 3C:
+
+- connect the existing Firebase client and anonymous-authentication services to React;
+- keep Firebase initialization and authentication state in `App`;
+- preserve transient Home cards when Firebase is loading or unavailable;
+- add per-card Save behavior through the existing saved-links service;
+- replace the Saved Links placeholder with a functional persisted-links page;
+- support persisted deletion only after Firestore confirms success;
+- reuse `Card` and `CardList` as presentational components;
+- expose loading, success, duplicate, empty, and error states;
+- preserve keyboard navigation, focus styles, external-link safety, image fallbacks, and mobile behavior;
+- add predictable focus handling after persisted deletion;
+- avoid automatic retries, real-time listeners, login UI, new dependencies, service changes, and unrelated redesign;
+- do not commit or push.
+
+After implementation, run lint, tests, build, and diff verification, then complete real browser verification.
+
+### AI Contribution
+
+The AI modified:
+
+- `src/App.jsx`;
+- `src/pages/HomePage.jsx`;
+- `src/pages/SavedLinksPage.jsx`;
+- `src/components/Card.jsx`;
+- `src/components/CardList.jsx`;
+- `src/App.css`.
+
+`App` now:
+
+- initializes the existing Firebase client and anonymous-authentication service;
+- owns Firebase loading, authenticated, configuration-error, and authentication-error states;
+- stores the authenticated UID and Firestore database instance;
+- continues owning transient Home cards;
+- owns per-card session save outcomes so they survive route navigation.
+
+`HomePage` now:
+
+- preserves the existing metadata retrieval and transient-card workflow;
+- adds a Save action to each transient card;
+- prevents repeated Save requests while one is pending;
+- handles ready, saving, saved, duplicate, and failed-save states;
+- leaves failed and successfully saved transient cards visible;
+- allows deliberate retry after a failed save;
+- keeps local deletion independent from persisted deletion.
+
+`SavedLinksPage` now:
+
+- waits for authenticated Firebase state;
+- loads persisted links through `listSavedLinks()`;
+- displays connection, loading, empty, loaded, and blocking-error states;
+- renders saved links through the reusable card components;
+- deletes records through `deleteSavedLink()`;
+- removes a card locally only after Firestore confirms deletion;
+- retains the card when deletion fails;
+- manages pending deletion independently for each item;
+- places focus on the next Delete button, the previous Delete button, or the Saved Links heading after successful deletion.
+
+`Card` and `CardList` remain presentational and contain no Firebase or persistence imports.
+
+### Human Review
+
+Human review inspected all six modified files before committing them.
+
+The review confirmed:
+
+- React calls only the existing Firebase and saved-links services;
+- `App` remains the owner of global Firebase state, transient cards, and session save outcomes;
+- Firebase failure does not prevent rendering Home, navigation, metadata retrieval, or transient-card deletion;
+- only the selected Save or Delete action is disabled while pending;
+- successful saves do not remove Home cards;
+- duplicate handling uses the stable `duplicate-saved-link` error code;
+- failed saves keep the card and expose a deliberate Retry save action;
+- persisted links are not sorted again in React;
+- failed persisted deletion keeps the saved card visible;
+- `Card` remains presentational;
+- button actions use native controls, accessible labels, disabled state, and `aria-busy`;
+- asynchronous feedback uses status or alert semantics as appropriate;
+- safe external-link attributes and broken-image fallbacks remain intact;
+- mobile behavior and visible focus styles are preserved.
+
+The restrictive Firestore rules reviewed in Phase 3B were manually copied into Firebase Console and published before real persistence testing.
+
+### Manual Changes or Corrections
+
+Manual browser testing identified two issues that automated verification did not detect.
+
+#### Home Save State After Persisted Deletion
+
+Deleting a link from Saved Links correctly removed the Firestore document and intentionally left the matching transient Home card visible. However, that Home card incorrectly remained in the disabled `Saved` or `Already saved` session state.
+
+A narrowly scoped AI correction:
+
+- kept `cardSaveStates` owned by `App`;
+- added an App callback that finds transient cards with the same normalized URL;
+- clears their saved or duplicate session states only after Firestore confirms successful deletion;
+- preserves the transient cards themselves;
+- leaves Home save states unchanged when persisted deletion fails.
+
+Manual verification confirmed that matching Home cards return to an active `Save` state after persisted deletion.
+
+#### Distinguishable Accessible Action Labels
+
+Manual focus testing showed that different domains can share the same metadata title. For example, `example.org` and `example.net` both used the title `Example Domain`, producing indistinguishable accessible Delete labels.
+
+A narrowly scoped AI correction changed contextual accessible names to include the domain when a title exists, for example:
+
+- `Save Example Domain on example.org`;
+- `Delete card for Example Domain on example.org`;
+- `Delete Example Domain on example.org from Saved Links`.
+
+Cards without a title use only the domain, avoiding repetition. Visible button text and feedback messages were unchanged.
+
+### Real Browser Verification
+
+The following checks were completed against the real local Firebase project:
+
+- the initial Home page rendered without a visible Firebase error;
+- the first visit created exactly one anonymous Firebase user;
+- reloading preserved the same anonymous account and did not create a duplicate user;
+- a GitHub URL produced a complete enriched card;
+- Save persisted the GitHub card while keeping its Home card visible;
+- the saved GitHub card appeared on the Saved Links page;
+- the saved record survived a full page reload;
+- attempting to save GitHub again produced the duplicate state;
+- Firestore contained only one GitHub document after the duplicate attempt;
+- successful persisted deletion removed the card from Saved Links;
+- Home cards remained independent from persisted records;
+- Home Save state returned to `Save` after the matching persisted document was deleted;
+- `example.net` appeared before `example.org`, confirming newest-first ordering;
+- deleting the first of two saved cards moved focus to the remaining card’s Delete button;
+- deleting the final saved card moved focus to the `Saved Links` heading;
+- accessible action labels included domains and distinguished cards sharing the same title;
+- direct navigation to `/saved` worked;
+- Home and Saved Links worked at approximately 375 px without horizontal overflow, overlapping controls, or broken long-text layout;
+- navigation between routes produced no React, Firebase, or uncaught console errors.
+
+No screen-reader test is claimed.
+
+Forced configuration, authentication, write, list, and delete failures were not manually simulated during this browser-verification session.
+
+### Verification
+
+- `npm run lint` passed after the initial implementation and both corrections.
+- `npm run test` passed 87/87 tests.
+- `npm run build` passed.
+- `git diff --check` passed.
+- `git diff --cached --check` passed after staging the six files.
+- The final working scope contained exactly the six approved Phase 3C files.
+- No service, Firestore-rule, environment, or dependency file was modified by the React integration.
+- No package was installed.
+- The final production bundle contained 53 transformed modules.
+- The main JavaScript chunk was approximately 812.63 kB before gzip and 246.26 kB compressed.
+- Vite reported a non-failing chunk-size warning after Firebase entered the production bundle.
+- No code-splitting optimization was added because it was outside the Phase 3C scope.
+- No automatic retry, real-time listener, login UI, logout UI, account upgrade, or cross-device recovery was introduced.
+
+---
+
 ## Final AI Assistance Summary
 
 Pending until the later Week 3 phases are finished.
