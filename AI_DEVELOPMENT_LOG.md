@@ -1294,21 +1294,127 @@ Forced configuration, authentication, write, list, and delete failures were not 
 
 ## Final AI Assistance Summary
 
-Pending until the later Week 3 phases are finished.
+AI assistance was used throughout Week 3 as a controlled development tool rather than as an unchecked code generator.
+
+The workflow followed these principles:
+
+- each phase began with a limited and explicit scope;
+- architectural constraints were defined before implementation;
+- the AI was instructed not to commit, push, install unrelated packages, or modify files outside the approved scope;
+- generated code was inspected manually before being accepted;
+- linting, automated tests, production builds, Git diff checks, and browser testing were used as separate verification layers;
+- implementation and documentation changes were committed separately;
+- issues discovered during human review were corrected before the corresponding phase was considered complete.
+
+The AI contributed to:
+
+- React routing and page structure;
+- reusable card and card-list components;
+- application state ownership;
+- metadata retrieval and normalization;
+- stable service errors and timeout handling;
+- Firebase client initialization;
+- anonymous authentication;
+- Firestore persistence services;
+- restrictive Firestore security rules;
+- Save, duplicate, list, and Delete integration;
+- loading, empty, success, duplicate, retry, and error states;
+- keyboard focus behavior;
+- contextual accessible labels;
+- responsive CSS;
+- automated service tests;
+- project and workflow documentation.
+
+The human developer remained responsible for:
+
+- selecting the feature and project direction;
+- approving the architecture;
+- reviewing every modified file;
+- configuring the real Firebase project;
+- enabling Anonymous Authentication;
+- creating the Firestore database;
+- publishing the security rules;
+- protecting local credentials;
+- executing commands;
+- testing the application in the browser;
+- identifying visual, state-management, and accessibility issues;
+- deciding which AI suggestions to accept or reject;
+- creating commits and pushing them to GitHub.
+
+AI output was not treated as proof of correctness. Several meaningful issues were found only through human inspection and real browser interaction.
 
 ## Manual Improvements and Refactoring Summary
 
-- Human review corrected the Phase 1 state architecture before implementation by keeping cards in `App` above the routes.
-- Manual browser testing caught a multiline heading overlap that lint, unit tests, and the production build did not detect.
+Human review and manual testing produced the following improvements during Week 3:
+
+- The Phase 1 state architecture was corrected before implementation so transient cards remain owned by `App` above the routes.
+- A multiline heading overlap that lint, tests, and the production build did not detect was found during browser testing.
 - The root line-height was changed from a computed percentage to a unitless value, and `h1` received an explicit line-height.
-- Nested responsive rules were refactored into a standard top-level media query without changing their responsive values.
+- Nested responsive rules were refactored into a standard top-level media query without changing their responsive behavior.
 - The leftover Vite document title was changed to `ContextClip`.
-- Phase 2 was divided into independently reviewable service and React-integration steps.
+- Phase 2 was divided into independently reviewable metadata-service and React-integration steps.
 - Metadata retrieval was isolated behind a normalized service with stable errors, a finite timeout, and mocked-fetch tests.
 - The locally normalized URL and locally derived domain remain authoritative when provider metadata is complete, partial, or unavailable.
-- Manual browser testing verified complete, partial, offline, rate-limit, timeout, broken-asset, keyboard, route-state, and mobile behaviors.
-- Human review improved feedback accuracy by clearing stale validation and submission messages as soon as the URL input is edited.
+- Manual browser testing verified complete metadata, partial metadata, offline behavior, rate limiting, timeout handling, broken assets, keyboard use, route-state preservation, and mobile layouts.
+- Stale validation and submission feedback is cleared as soon as the URL input is edited.
+- Firebase configuration was isolated in an ignored `.env.local` file, while `.env.example` documents the required variable names without exposing credentials.
+- Anonymous authentication was verified to restore the same browser session instead of creating a new user after every reload.
+- The Firestore service was reviewed to avoid reading `documentSnapshot.data()` more than once for the same document.
+- Firestore rules were reviewed locally, copied manually into Firebase Console, and published before real persistence testing.
+- Persisted data is scoped to `users/{uid}/savedLinks/{linkId}`, and the published rules require the authenticated UID to match the user ID in the path.
+- Successful Save operations keep transient Home cards visible.
+- Duplicate Save attempts use the stable `duplicate-saved-link` service error and do not create a second Firestore document.
+- Persisted deletion removes the local Saved Links card only after Firestore confirms success.
+- A state-consistency problem found manually was corrected so deleting a persisted link resets matching Home cards from `Saved` or `Already saved` back to `Save` without deleting the transient cards.
+- Focus after deletion was refined so it moves to the next Delete button, the previous Delete button, or the Saved Links heading when no cards remain.
+- Accessible action labels were corrected to include the domain when different cards share the same metadata title.
+- Direct navigation to `/saved`, route navigation, narrow mobile layouts, long text, focus behavior, and browser-console output were reviewed manually.
+- The Firebase production bundle warning was documented rather than hidden or addressed through unrelated code-splitting work outside the assignment scope.
 
 ## Final Verification
 
-Pending until the later Week 3 phases are finished.
+The final Week 3 application was verified with the following results:
+
+### Automated Verification
+
+- `npm run lint` passed.
+- `npm run test` passed 87/87 tests.
+- `npm run build` passed with Vite 8.1.4.
+- The production build transformed 53 modules.
+- The generated CSS bundle was approximately 6.08 kB before gzip and 1.80 kB compressed.
+- The main JavaScript bundle was approximately 812.63 kB before gzip and 246.26 kB compressed.
+- Vite reported a non-failing warning because the main JavaScript chunk exceeds 500 kB.
+- `git diff --check` passed.
+- `git diff --cached --check` passed for each reviewed commit.
+
+### Real Firebase Verification
+
+- Anonymous Authentication created one browser user.
+- Reloading restored the same anonymous session.
+- Firestore Save operations succeeded.
+- Saved records appeared on the Saved Links page.
+- Saved records remained after a full reload.
+- Duplicate Save attempts did not create additional documents.
+- Persisted records were returned newest first.
+- Successful Delete operations removed the corresponding Firestore documents.
+- Published Firestore rules allowed valid owner operations during testing.
+
+### Browser and Interaction Verification
+
+- Home rendered without a visible Firebase error.
+- Complete, partial, and fallback metadata states rendered correctly.
+- Transient cards remained available independently from persisted cards.
+- Save, Saved, duplicate, Retry, Delete, loading, empty, success, and error interfaces were reviewed in code.
+- Home Save state returned to `Save` after the corresponding persisted record was deleted.
+- Focus moved to the expected control after deleting saved cards.
+- Accessible labels distinguished cards that shared the same title.
+- Direct navigation to `/saved` worked.
+- Home and Saved Links were checked at approximately 375 px.
+- No horizontal overflow or overlapping controls were found.
+- Navigation between routes produced no uncaught React or Firebase console errors.
+
+Forced Firebase configuration, authentication, list, write, and delete failures were not manually simulated in the real browser session. Their handling was inspected in code, but they are not claimed as completed manual tests.
+
+A complete screen-reader audit was not performed.
+
+The final implementation remains intentionally limited to the Week 3 assignment. It does not include account-based login, logout, anonymous-account upgrading, real-time Firestore listeners, cross-device recovery, drag-and-drop organization, groups, notes, connections, or an infinite canvas.
